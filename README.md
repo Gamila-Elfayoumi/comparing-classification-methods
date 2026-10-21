@@ -54,9 +54,6 @@ Positive means melanoma for HAM10000 and anomaly for the blood-cell table. Sensi
 
 `src/analyze.py` calculates exploratory paired t tests and Wilcoxon signed-rank tests for AUC against PCA, Holm-adjusted paired t p values, repeated-measures ANOVA, a descriptive MANOVA of AUC and log loss, and a McNemar large-sample z statistic on the first shared test split. Three repeated splits have low inferential power and share training observations. The MANOVA treats repeated observations as independent and must **not** be used for confirmatory inference. The methods are included for transparent comparison, not significance claims.
 
-## Research limitations
-
-This is a small, explicitly preliminary computational comparison. Its lower-resolution lesion representation, two-dimensional bottleneck, approximated t-SNE/SNE test transforms, absence of a patient-level blood split, limited repeated splits, and no external validation prevent clinical conclusions or a Q1-ready manuscript claim. A journal submission would require a registered endpoint, larger nested validation, external cohorts, uncertainty intervals, robust baselines, data provenance checks, and lesion-level detection annotations for FROC.
 
 ## Files
 
