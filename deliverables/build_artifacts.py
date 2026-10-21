@@ -142,6 +142,7 @@ def report():
     doc.add_heading("Introduction", 1)
     doc.add_paragraph("Dimensionality reduction is often used to inspect high-dimensional biomedical data. A visually separated map does not automatically retain information needed for a new patient or image. This benchmark therefore compares embeddings through a fixed downstream classifier on held-out samples, while measuring runtime and parameter sensitivity. It treats the methods as representation procedures, not standalone classifiers.")
     doc.add_paragraph("PCA is linear and maximizes retained variance. Kernel PCA applies a radial basis function kernel. Gaussian SNE matches neighbor probabilities with a Gaussian low-dimensional affinity. t-SNE uses a heavy-tailed affinity. The hybrid applies PCA before t-SNE. UMAP builds a fuzzy neighborhood graph. Metric MDS preserves pairwise distances, PCoA decomposes a centered distance matrix, and Isomap approximates geodesic distances. All methods output two coordinates for a common comparison.")
+    doc.add_paragraph("Each method preserves a different property, so a good two-dimensional picture is not necessarily a good classifier input. PCA keeps directions of greatest overall variance, which may reflect illumination or cell size rather than diagnosis. Kernel PCA can unfold curved structure but depends on kernel scale. MDS and PCoA emphasize global distances; the chosen distance measure determines which differences matter. Isomap estimates distances along a neighbor graph and can help when class information follows a curved manifold, but graph construction can be unstable with sparse or noisy samples. SNE, t-SNE, and UMAP focus on local neighborhoods. Their visual clusters can be useful for exploration, yet cluster separation alone does not establish predictive validity on new records.")
     doc.add_heading("Dataset description", 1)
     add_table(doc, ["Dataset", "Records", "Input features", "Positive class", "Split unit"], [
         ["HAM10000", "10,015", "192 values from 8 × 8 RGB pixels", "Melanoma: 1,113", "Lesion ID"],
@@ -169,6 +170,10 @@ def report():
         best = max(METHODS, key=lambda m: float(summary[(dataset,m)]["auc_roc_mean"]))
         low = min(METHODS, key=lambda m: float(summary[(dataset,m)]["cpu_seconds_mean"]))
         doc.add_paragraph(f"In {dataset}, {best} has the highest mean ROC AUC for setting A ({value(dataset,best,'auc_roc')}). {low} uses the least mean CPU time ({value(dataset,low,'cpu_seconds',2)} s). These are descriptive rankings across only three overlapping splits. Accuracy should be read together with sensitivity and specificity because the positive class is less frequent.")
+        if dataset == "HAM10000":
+            doc.add_paragraph("Isomap's mean AUC of 0.649 exceeds PCA's 0.602, suggesting that a neighborhood-graph representation may retain more melanoma ranking information in these compressed pixels. This is a hypothesis about the observed data, not proof of an underlying disease manifold. PCA still has slightly higher accuracy (0.609 versus 0.590), showing that ranking quality and decisions at the fixed 0.5 threshold answer different questions. Isomap's precision is only 0.134: many positive predictions are false alarms in this low-prevalence sample. Neither AUC nor accuracy is strong enough here to support a diagnostic claim.")
+        else:
+            doc.add_paragraph("PCA has the highest mean AUC on the blood-cell table (0.630) while using about 0.02 CPU seconds, consistent with much of the usable signal being captured by broad linear variation in these selected numeric features. SNE has higher accuracy (0.614) but lower AUC (0.581), because one fixed decision threshold can favor the majority class without ranking anomalous records well. MDS has the lowest AUC (0.562) and high CPU cost (about 1.06 seconds); preserving global Euclidean distances in two coordinates did not preserve the class signal well in this pilot. These explanations remain plausible interpretations rather than established mechanisms.")
         stem = dataset.replace(" ", "_")
         add_figure(doc, f"{stem}_accuracy.png", f"Figure. Held-out accuracy by method on {dataset}.")
         add_figure(doc, f"{stem}_loss.png", f"Figure. Common held-out classifier log loss on {dataset}.")
@@ -255,6 +260,18 @@ def slides():
               "HAM10000: 10,015 8 × 8 RGB lesion records, 192 pixel features, melanoma versus other diagnoses. Split by lesion ID.\n\nBlood-cell anomaly table: 5,880 rows, 22 selected numeric features, anomaly versus normal. Patient IDs and independent clinical provenance are unavailable.\n\nNeither dataset supports diagnostic deployment from this pilot.")
     add_slide(prs, "What the nine methods do",
               "PCA and kernel PCA retain linear or kernel structure. SNE, t-SNE, the PCA plus t-SNE hybrid, and UMAP emphasize neighborhoods.\n\nMetric MDS preserves Euclidean distances. PCoA decomposes cosine distances. Isomap uses graph geodesics.\n\nAll output two coordinates, then use the same classifier.")
+    add_slide(prs, "The comparison measures retained class information",
+              "Input features are standardized using the training records. Each algorithm reduces them to two coordinates. The same balanced logistic regression then predicts held-out labels.\n\nAUC asks whether positives generally receive higher scores than negatives across thresholds. Accuracy evaluates one fixed threshold. Log loss penalizes confident wrong probabilities. CPU time covers the full fitted pipeline.\n\nA visually neat map is insufficient evidence unless held-out prediction also improves.")
+    add_slide(prs, "Global geometry: PCA, kernel PCA, MDS, PCoA",
+              "PCA keeps directions with the most variance. It is fast, but large variance need not represent disease.\n\nKernel PCA uses an RBF similarity so curved patterns can become separable. Its gamma setting determines the scale of similarity.\n\nMDS tries to preserve Euclidean distances between every pair. PCoA eigendecomposes a centered distance matrix; here cosine distance is primary. Both can devote two dimensions to variation unrelated to the label.")
+    add_slide(prs, "Local geometry: SNE, t-SNE, hybrid, UMAP, Isomap",
+              "SNE and t-SNE match neighbor probabilities. t-SNE's heavy tail reduces crowding; perplexity controls neighborhood scale. PCA plus t-SNE first filters the inputs to at most 30 components.\n\nUMAP builds a fuzzy neighbor graph; its neighbor count controls how local the map is. Isomap uses graph shortest paths to estimate geodesic distances.\n\nThese maps can reveal local structure, but they may distort global distances and change when the neighborhood parameter changes.")
+    add_slide(prs, "How unseen test records enter each map",
+              "PCA, kernel PCA, UMAP, and Isomap transform new records directly. PCoA uses a distance-based Gower extension.\n\nThe chosen SNE, t-SNE, and MDS implementations have no native test transform. A five-neighbor weighted regressor estimates test coordinates from their training maps.\n\nThe measured ranking therefore compares complete representation pipelines, including this approximation. It does not compare only the training maps.")
+    add_slide(prs, "Method readings: PCA through the hybrid",
+              "PCA: blood-cell AUC 0.630, the best there. A simple linear map may suffice for these selected features; it is weakest on HAM AUC at 0.602.\n\nKernel PCA: 0.638 HAM, 0.624 blood. Curved RBF similarities help modestly, with kernel scale affecting the map.\n\nSNE: 0.616 HAM, 0.581 blood. Local-neighbor matching does not consistently retain the label signal.\n\nt-SNE: 0.638 HAM, 0.622 blood. Better than SNE on both, but its approximate test transform limits interpretation.\n\nPCA plus t-SNE: 0.632 HAM, 0.616 blood. The preprocessing step shows no gain over t-SNE in this pilot.")
+    add_slide(prs, "Method readings: UMAP through Isomap",
+              "UMAP: 0.645 HAM, 0.600 blood. The neighbor graph ranks lesions well, but costs about 2.24 CPU seconds per HAM run.\n\nMDS: 0.620 HAM, 0.562 blood. Preserving global Euclidean distances gives the weakest blood-cell AUC.\n\nPCoA: 0.633 HAM, 0.616 blood. Cosine distances give middle-ranking performance; a different distance changes the result.\n\nIsomap: 0.649 HAM, 0.582 blood. Graph geodesics lead HAM AUC but transfer poorly to the blood-cell table.\n\nThe mechanisms above are interpretations of measured associations, not proven causes.")
     for dataset in DATASETS:
         stem=dataset.replace(" ","_")
         best=max(METHODS,key=lambda m:float(summary[(dataset,m)]["auc_roc_mean"]))
@@ -263,12 +280,22 @@ def slides():
                   f"{stem}_accuracy.png", f"{stem}_loss.png")
         add_slide(prs, f"{dataset}: ROC and confusion matrices",
                   None, f"{stem}_roc.png", f"{stem}_confusion.png")
+        if dataset == "HAM10000":
+            add_slide(prs, "HAM10000: better ranking, weak positive precision",
+                      "Isomap leads mean ROC AUC at 0.649, versus 0.602 for PCA. A neighbor graph may retain class-related structure that the largest-variance PCA axes miss. The experiment does not establish that mechanism.\n\nPCA has slightly higher accuracy, 0.609 versus 0.590. AUC measures ranking across thresholds, while accuracy uses the prespecified 0.5 threshold.\n\nIsomap precision is 0.134: most positive calls are false positives. The 8 × 8 pixels and low melanoma prevalence limit clinical meaning.")
+        else:
+            add_slide(prs, "Blood cells: fast PCA wins on ranking",
+                      "PCA leads mean ROC AUC at 0.630 and takes about 0.02 CPU seconds. Broad linear variation may capture useful signal in the 22 selected features.\n\nSNE reaches 0.614 accuracy but only 0.581 AUC. Its threshold decisions look better than its overall ranking; accuracy alone would give a misleading winner.\n\nMDS has 0.562 AUC and takes about 1.06 CPU seconds. Keeping global distances in two dimensions did not retain much class signal here. Patient-level generalization remains untested.")
     add_slide(prs, "CPU time has a steep method cost",
               "PCA and kernel PCA are fastest in this sample-size range. UMAP, SNE, and t-SNE require substantially more CPU time. UMAP's first compilation is measured separately.",
               "HAM10000_cpu.png", "Blood_cell_cpu.png")
+    add_slide(prs, "CPU cost changes the practical choice",
+              "On blood cells, PCA needs about 0.02 CPU seconds and SNE about 6.10 seconds per run. SNE does not gain AUC in exchange for that extra compute (0.581 versus 0.630).\n\nOn HAM10000, Isomap leads AUC at about 0.10 CPU seconds; UMAP is close in AUC (0.645 versus 0.649) but takes about 2.24 seconds.\n\nThese are process CPU times for 750 training and 300 test records. UMAP's one-time compilation warmup is excluded and recorded separately; scaling can change the order.")
     add_slide(prs, "Parameter settings change the ranking",
               "A second setting changes neighborhood size or perplexity. Selecting a winner on the test set would inflate the reported result.",
               "HAM10000_parameters.png", "Blood_cell_parameters.png")
+    add_slide(prs, "What the parameter comparison can and cannot say",
+              "Setting A was declared primary before reading test results. Setting B checks whether whitening, kernel scale, perplexity, neighbor count, MDS iterations, or PCoA distance changes the result.\n\nLarge A-to-B shifts show tuning sensitivity, especially for methods that define neighborhoods. They do not justify choosing the better test-set setting after the fact.\n\nA stronger study would tune parameters inside each training fold and then evaluate once on an untouched outer test fold.")
     add_slide(prs, "Gaussian SNE optimization loss",
               "The plotted KL objective tracks Gaussian SNE fitting. Native PCA, t-SNE, and UMAP objectives have different meanings. The earlier classifier log-loss charts are comparable across methods.",
               "sne_objective.png")
@@ -277,6 +304,8 @@ def slides():
               "froc_applicability.png")
     add_slide(prs, "Statistical tests are exploratory",
               "Repeated-measures ANOVA of AUC: F(8,40)=0.673, p=0.712. Descriptive MANOVA method term: Wilks' lambda=0.840, p=0.945.\n\nPaired t, Wilcoxon, and McNemar z comparisons are in the repository. Three overlapping splits have low power. MANOVA's independence assumption is violated. Read all p values as diagnostics.")
+    add_slide(prs, "What counts as good or bad evidence here",
+              "A good result would combine high held-out AUC with useful sensitivity and precision, low log loss, stable parameters, and an acceptable CPU cost. None of these pilot AUCs exceeds 0.65.\n\nA method can look good on one metric and weak on another: SNE has the highest blood-cell accuracy but lower AUC than PCA; Isomap leads HAM AUC but its positive precision is only 0.134.\n\nThree overlapping splits do not provide a reliable superiority claim. The statistical tests and plots describe this experiment, not clinical readiness.")
     add_slide(prs, "Interpretation and next steps",
               "Performance changes with split and parameter choice. The 8 × 8 lesion images limit clinical meaning. The blood-cell table lacks patient-level validation.\n\nFor a journal study: use original or validated features, external cohorts, nested tuning, uncertainty intervals, and lesion locations if FROC is required.",
               footer="Sources and exact numbers: AML_research_report.docx and results/primary_summary.csv")
