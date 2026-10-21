@@ -4,5 +4,4 @@ title: Dimensionality Reduction Benchmark for HAM10000 and Blood Cell Anomaly Da
 type: software
 version: 0.1.0
 date-released: 2026-10-21
-license: MIT
 repository-code: https://github.com/Gamila-Elfayoumi/comparing-classification-methods

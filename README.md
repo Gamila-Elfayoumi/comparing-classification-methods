@@ -64,4 +64,4 @@ Positive means melanoma for HAM10000 and anomaly for the blood-cell table. Sensi
 - `deliverables/`: research report and presentation.
 - `kaggle/`: Kaggle notebook handoff instructions.
 
-Code is released under the MIT license. Source datasets retain their own licenses and must be cited separately.
+Source datasets retain their own licenses and must be cited separately.
