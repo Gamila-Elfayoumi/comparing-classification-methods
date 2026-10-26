@@ -1,0 +1,21 @@
+{
+  "seeds": 3,
+  "train_n": 750,
+  "test_n": 300,
+  "methods": "all",
+  "append": false,
+  "all_methods": [
+    "PCA",
+    "Kernel PCA",
+    "SNE",
+    "t-SNE",
+    "PCA + t-SNE",
+    "UMAP",
+    "MDS",
+    "PCoA",
+    "Isomap",
+    "LLE",
+    "PCA + UMAP"
+  ],
+  "umap_warmup_cpu_seconds": 14.578125
+}

@@ -1,9 +1,9 @@
 data/ham/
 data/blood/
-data/fashion/
 __pycache__/
 *.pyc
 .venv/
 .tmp/
 .qa/
 results/raw/
+notebook_output/

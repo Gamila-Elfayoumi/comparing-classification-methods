@@ -55,6 +55,10 @@ Positive means melanoma for HAM10000 and anomaly for the blood-cell table. Sensi
 `src/analyze.py` calculates exploratory paired t tests and Wilcoxon signed-rank tests for AUC against PCA, Holm-adjusted paired t p values, repeated-measures ANOVA, a descriptive MANOVA of AUC and log loss, and a McNemar large-sample z statistic on the first shared test split. Three repeated splits have low inferential power and share training observations. The MANOVA treats repeated observations as independent and must **not** be used for confirmatory inference. The methods are included for transparent comparison, not significance claims.
 
 
+## Extended self-contained notebook
+
+The [Kaggle notebook](kaggle/run_benchmark.ipynb) runs from the two attached source datasets without attaching this repository. It adds LLE and an exploratory PCA + UMAP hybrid to the nine methods in the report, and plots the held-out classes in every two-dimensional embedding. Its [example outputs](kaggle/example_outputs/) show a completed three-split run. The hybrid is competitive but has not shown a reliable improvement over the best original method; see the notebook for metric and CPU comparisons.
+
 ## Files
 
 - `src/benchmark.py`: data checks, split, embeddings, metrics, timing.
@@ -62,6 +66,6 @@ Positive means melanoma for HAM10000 and anomaly for the blood-cell table. Sensi
 - `data/download_data.py`: source acquisition and hashes.
 - `results/`: measured CSV tables, protocol, figures, and statistical outputs.
 - `deliverables/`: research report and presentation.
-- `kaggle/`: Kaggle notebook handoff instructions.
+- `kaggle/`: self-contained 11-method notebook, generator, and example outputs.
 
 Source datasets retain their own licenses and must be cited separately.
