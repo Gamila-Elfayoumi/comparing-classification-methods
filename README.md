@@ -1,6 +1,6 @@
 # Dimensionality reduction for two biomedical classification tables
 
-This repository compares PCA, RBF kernel PCA, Gaussian SNE, t-SNE, PCA followed by t-SNE, UMAP, metric MDS, PCoA, and Isomap. A fixed logistic regression classifier tests whether each two-dimensional embedding retains information useful for a binary decision. It reports predictive performance, parameter sensitivity, and process CPU time. The report and slides are in `deliverables/`.
+This repository compares PCA, RBF kernel PCA, Gaussian SNE, t-SNE, PCA followed by t-SNE, UMAP, metric MDS, PCoA, and Isomap. The full notebook also evaluates LLE and PCA + UMAP. A fixed logistic regression classifier tests whether each two-dimensional embedding retains information useful for a binary decision. It reports predictive performance, parameter sensitivity, and process CPU time. The [detailed model summary](docs/MODEL_SUMMARY.md), report, and slides explain the results.
 
 ## Study data
 
@@ -54,10 +54,9 @@ Positive means melanoma for HAM10000 and anomaly for the blood-cell table. Sensi
 
 `src/analyze.py` calculates exploratory paired t tests and Wilcoxon signed-rank tests for AUC against PCA, Holm-adjusted paired t p values, repeated-measures ANOVA, a descriptive MANOVA of AUC and log loss, and a McNemar large-sample z statistic on the first shared test split. Three repeated splits have low inferential power and share training observations. The MANOVA treats repeated observations as independent and must **not** be used for confirmatory inference. The methods are included for transparent comparison, not significance claims.
 
+## Research limitations
 
-## Extended self-contained notebook
-
-The [Kaggle notebook](kaggle/run_benchmark.ipynb) runs from the two attached source datasets without attaching this repository. It adds LLE and an exploratory PCA + UMAP hybrid to the nine methods in the report, and plots the held-out classes in every two-dimensional embedding. Its [example outputs](kaggle/example_outputs/) show a completed three-split run. The hybrid is competitive but has not shown a reliable improvement over the best original method; see the notebook for metric and CPU comparisons.
+This is a small, explicitly preliminary computational comparison. Its lower-resolution lesion representation, two-dimensional bottleneck, approximated t-SNE/SNE test transforms, absence of a patient-level blood split, limited repeated splits, and no external validation prevent clinical conclusions or a Q1-ready manuscript claim. A journal submission would require a registered endpoint, larger nested validation, external cohorts, uncertainty intervals, robust baselines, data provenance checks, and lesion-level detection annotations for FROC.
 
 ## Files
 
@@ -66,6 +65,7 @@ The [Kaggle notebook](kaggle/run_benchmark.ipynb) runs from the two attached sou
 - `data/download_data.py`: source acquisition and hashes.
 - `results/`: measured CSV tables, protocol, figures, and statistical outputs.
 - `deliverables/`: research report and presentation.
-- `kaggle/`: self-contained 11-method notebook, generator, and example outputs.
+- `kaggle/`: Kaggle notebook handoff instructions.
+- `docs/MODEL_SUMMARY.md`: classifier, splits, transforms, interpretation, and limitations.
 
 Source datasets retain their own licenses and must be cited separately.

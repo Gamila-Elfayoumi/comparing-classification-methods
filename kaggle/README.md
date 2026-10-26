@@ -13,6 +13,8 @@ The notebook saves `runs.csv`, predictions, summary tables, ROC and confusion pl
 
 `example_outputs/` contains a completed default-size local run: the 11-method summary, parameter table, protocol, ANOVA output, mean-AUC charts, and class-colored embedding panels for both datasets. The PCA + UMAP hybrid is competitive but does not establish a reliable improvement: mean ROC AUC is 0.648 on HAM10000 versus Isomap's 0.649, and 0.632 on blood cells versus PCA's 0.630, with higher CPU use. These are preliminary three-split comparisons.
 
+The enlarged `HAM10000_focus_classes.png` and `Blood_cell_focus_classes.png` are used in the presentation. Regenerate them from a completed notebook result directory with `python kaggle/make_focus_figures.py --results-dir notebook_output/results`. The plot titles show first-split AUC; the CSV summary gives three-split means.
+
 `build_full_notebook.py` regenerates the notebook from the tested repository functions and adds LLE, PCA + UMAP, and class visualization. The notebook runs without attaching the repository itself.
 
 Kaggle publication still requires signing in to the account, attaching the two source datasets, and checking their terms and the notebook's visibility. No Kaggle page is claimed to exist yet.

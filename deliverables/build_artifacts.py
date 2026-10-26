@@ -253,7 +253,7 @@ def slides():
     prs.slide_width, prs.slide_height = Inches(13.333), Inches(7.5)
     slide = prs.slides.add_slide(prs.slide_layouts[6])
     add_text(slide, "Dimensionality reduction for biomedical classification", .75, 1.0, 11.8, 1.5, 36, True)
-    add_text(slide, "HAM10000 and blood-cell anomaly data\nMeasured pilot comparison | 21 October 2026", .78, 3.0, 11.0, 1.6, 22)
+    add_text(slide, "HAM10000 and blood-cell anomaly data\nNine-method pilot and eleven-method notebook extension | 26 October 2026", .78, 3.0, 11.0, 1.6, 22)
     add_slide(prs, "Study question and design",
               "Can a two-dimensional representation preserve class information for held-out records?\n\nNine algorithms. Two parameter settings each. Three shared splits. One balanced logistic regression per embedding.\n\nPrimary ranking uses setting A only; setting B tests parameter sensitivity.")
     add_slide(prs, "Two datasets and their limits",
@@ -262,6 +262,10 @@ def slides():
               "PCA and kernel PCA retain linear or kernel structure. SNE, t-SNE, the PCA plus t-SNE hybrid, and UMAP emphasize neighborhoods.\n\nMetric MDS preserves Euclidean distances. PCoA decomposes cosine distances. Isomap uses graph geodesics.\n\nAll output two coordinates, then use the same classifier.")
     add_slide(prs, "The comparison measures retained class information",
               "Input features are standardized using the training records. Each algorithm reduces them to two coordinates. The same balanced logistic regression then predicts held-out labels.\n\nAUC asks whether positives generally receive higher scores than negatives across thresholds. Accuracy evaluates one fixed threshold. Log loss penalizes confident wrong probabilities. CPU time covers the full fitted pipeline.\n\nA visually neat map is insufficient evidence unless held-out prediction also improves.")
+    add_slide(prs, "The prediction model used in every run",
+              "1  Split records: HAM10000 by lesion ID; blood cells by stratified rows. Each seed uses 750 training and 300 held-out records.\n\n2  Fit StandardScaler on training features only. Fit an unsupervised 2D embedding on those standardized records; map held-out records into the same coordinates.\n\n3  Fit LogisticRegression(class_weight='balanced', max_iter=1000, random_state=100+seed) on the training coordinates. predict_proba gives the positive-class score; a fixed 0.5 cutoff gives class predictions.\n\nThe embedding is a feature extractor. Logistic regression is the classifier; its settings are identical across methods.")
+    add_slide(prs, "What the fixed classifier lets us compare",
+              "The same linear decision rule in two coordinates makes changes in held-out ROC AUC, log loss, and confusion counts reflect the complete representation pipeline. Class weighting increases the influence of the minority class during fitting.\n\nA high AUC means better ranking across thresholds; it does not imply a useful 0.5 cutoff or calibrated probabilities. Accuracy may favor the majority class. Read sensitivity and precision together when positives are rare.\n\nSNE, t-SNE, and MDS use a five-neighbor weighted approximation for unseen points. Their scores include the quality of that approximation. These are small pilot samples, not validated diagnostic models.")
     add_slide(prs, "Global geometry: PCA, kernel PCA, MDS, PCoA",
               "PCA keeps directions with the most variance. It is fast, but large variance need not represent disease.\n\nKernel PCA uses an RBF similarity so curved patterns can become separable. Its gamma setting determines the scale of similarity.\n\nMDS tries to preserve Euclidean distances between every pair. PCoA eigendecomposes a centered distance matrix; here cosine distance is primary. Both can devote two dimensions to variation unrelated to the label.")
     add_slide(prs, "Local geometry: SNE, t-SNE, hybrid, UMAP, Isomap",
@@ -306,6 +310,29 @@ def slides():
               "Repeated-measures ANOVA of AUC: F(8,40)=0.673, p=0.712. Descriptive MANOVA method term: Wilks' lambda=0.840, p=0.945.\n\nPaired t, Wilcoxon, and McNemar z comparisons are in the repository. Three overlapping splits have low power. MANOVA's independence assumption is violated. Read all p values as diagnostics.")
     add_slide(prs, "What counts as good or bad evidence here",
               "A good result would combine high held-out AUC with useful sensitivity and precision, low log loss, stable parameters, and an acceptable CPU cost. None of these pilot AUCs exceeds 0.65.\n\nA method can look good on one metric and weak on another: SNE has the highest blood-cell accuracy but lower AUC than PCA; Isomap leads HAM AUC but its positive precision is only 0.134.\n\nThree overlapping splits do not provide a reliable superiority claim. The statistical tests and plots describe this experiment, not clinical readiness.")
+    extension = ROOT / "kaggle" / "example_outputs"
+    def extension_slide(title, figure, interpretation):
+        page = prs.slides.add_slide(prs.slide_layouts[6])
+        add_text(page, title, .65, .35, 12.0, .65, 28, True)
+        page.shapes.add_picture(str(extension / figure), Inches(.55), Inches(1.12), width=Inches(8.7))
+        add_text(page, interpretation, 9.5, 1.45, 3.2, 5.1, 17)
+        add_text(page, "Notebook extension: setting A, first split shown; AUC beside each map is for that split only.", .65, 7.08, 12.0, .22, 9, False, PRGB(92,103,112))
+    add_slide(prs, "Notebook extension: eleven methods",
+              "The full Kaggle notebook adds locally linear embedding (LLE) and an exploratory PCA + UMAP hybrid to the original nine methods. It applies the same two settings, three seeds, held-out classifier, and metrics.\n\nLLE reconstructs local neighborhoods from weighted neighbors. PCA + UMAP first reduces the feature space to at most 30 PCA coordinates, then builds the UMAP neighbor graph. Both are unsupervised two-dimensional representations.\n\nAcross three splits, HAM AUC is 0.648 for PCA + UMAP versus 0.649 for Isomap. Blood-cell AUC is 0.632 for PCA + UMAP versus 0.630 for PCA. These tiny differences do not establish superiority, and the hybrid costs more CPU time.")
+    extension_slide("HAM10000: class maps remain mixed", "HAM10000_focus_classes.png",
+                    "Orange melanoma points overlap blue non-melanoma points in every map. Isomap and PCA + UMAP curve the geometry, but neither creates a clean class boundary.\n\nThis first split has lower AUC than the three-split mean for several methods. The change across splits is evidence of instability. Visual separation alone cannot select a winner.")
+    extension_slide("Blood cells: clusters are not class labels", "Blood_cell_focus_classes.png",
+                    "PCA, LLE, PCA + t-SNE, and PCA + UMAP create different clusters. Both labels appear in several clusters, so cluster count or visual compactness does not measure classification quality.\n\nPCA + t-SNE has a good AUC on the pictured split, but the three-split average favors PCA + UMAP narrowly. The table lacks patient IDs for patient-level testing.")
+    page = prs.slides.add_slide(prs.slide_layouts[6])
+    add_text(page, "Eleven-method AUC comparison", .65, .35, 12.0, .65, 28, True)
+    page.shapes.add_picture(str(extension / "eleven_method_auc_comparison.png"), Inches(.65), Inches(1.12), width=Inches(12.0))
+    add_text(page, "Top differences of 0.001–0.002 are too small for a reliable superiority claim; compare CPU cost and uncertainty before choosing a method.", .8, 6.48, 11.8, .45, 16)
+    add_text(page, "Source: kaggle/example_outputs/primary_summary.csv; figures generated by the full notebook.", .65, 7.05, 12.0, .25, 10, False, PRGB(92,103,112))
+    page = prs.slides.add_slide(prs.slide_layouts[6])
+    add_text(page, "Eleven-method CPU comparison", .65, .35, 12.0, .65, 28, True)
+    page.shapes.add_picture(str(extension / "eleven_method_cpu_comparison.png"), Inches(.65), Inches(1.12), width=Inches(12.0))
+    add_text(page, "PCA + UMAP uses about 1.74s on HAM and 1.72s on blood cells. The nearest AUC leaders use about 0.12s (Isomap) and 0.02s (PCA). Times depend on hardware and sample size.", .8, 6.45, 11.8, .55, 16)
+    add_text(page, "Process CPU time excludes UMAP compilation warmup; logarithmic horizontal axis.", .65, 7.05, 12.0, .25, 10, False, PRGB(92,103,112))
     add_slide(prs, "Interpretation and next steps",
               "Performance changes with split and parameter choice. The 8 × 8 lesion images limit clinical meaning. The blood-cell table lacks patient-level validation.\n\nFor a journal study: use original or validated features, external cohorts, nested tuning, uncertainty intervals, and lesion locations if FROC is required.",
               footer="Sources and exact numbers: AML_research_report.docx and results/primary_summary.csv")
