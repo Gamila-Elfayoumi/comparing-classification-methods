@@ -1,0 +1,28 @@
+{
+  "datasets": [
+    "HAM10000",
+    "Blood cell"
+  ],
+  "methods": [
+    "Full",
+    "GA",
+    "PSO",
+    "DE",
+    "GA + PSO",
+    "GA + DE"
+  ],
+  "seeds": 3,
+  "train_n": 750,
+  "test_n": 300,
+  "penalties": [
+    0.02,
+    0.05
+  ],
+  "population": 8,
+  "generations": 6,
+  "inner_folds": 2,
+  "objective": "mean inner ROC AUC - penalty * feature fraction",
+  "threshold": 0.5,
+  "group_split": "lesion_id for HAM10000; rows for blood cell",
+  "note": "Exploratory comparison; three overlapping splits are not independent."
+}

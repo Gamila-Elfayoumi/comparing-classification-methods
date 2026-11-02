@@ -2,6 +2,15 @@
 
 This repository compares PCA, RBF kernel PCA, Gaussian SNE, t-SNE, PCA followed by t-SNE, UMAP, metric MDS, PCoA, and Isomap. The full notebook also evaluates LLE and PCA + UMAP. A fixed logistic regression classifier tests whether each two-dimensional embedding retains information useful for a binary decision. It reports predictive performance, parameter sensitivity, and process CPU time. The [detailed model summary](docs/MODEL_SUMMARY.md), report, and slides explain the results.
 
+## New: metaheuristic feature selection
+
+A separate, measured wrapper study compares **GA, binary PSO, DE, GA + PSO, and GA + DE** with a full-feature logistic-regression baseline on the same two datasets. Feature masks are chosen using training-only inner folds; the shared held-out records are used for evaluation. The methods have the same attempted search budget and two sparsity settings. See the [methods and results document](docs/METAHEURISTIC_FEATURE_SELECTION.md), [self-contained Kaggle notebook](kaggle/metaheuristic_feature_selection.ipynb), figures and per-run files in `results/feature_selection/`, and the updated [presentation](deliverables/AML_presentation_metaheuristic.pptx). The feature-selection study uses selected original features and must be read separately from the earlier 2D embedding study.
+
+```powershell
+python src/feature_selection.py --seeds 3 --train-n 750 --test-n 300 --penalties 0.02,0.05 --population 8 --generations 6
+python src/plot_feature_selection.py
+```
+
 ## Study data
 
 1. **HAM10000**: 10,015 lesion images represented by the Kaggle 8 × 8 RGB pixel CSV (192 pixel features). The binary endpoint is melanoma (`mel`) versus every other HAM10000 diagnosis. `HAM10000_metadata.csv` supplies `lesion_id` for group-separated evaluation. This compressed representation is useful for a tractable algorithm comparison but loses clinical image detail. The source is [Skin Cancer MNIST HAM10000](https://www.kaggle.com/datasets/kmader/skin-cancer-mnist-ham10000), based on the [HAM10000 paper](https://arxiv.org/abs/1803.10417). Kaggle labels its mirror CC BY-NC-SA 4.0. Check the original data terms before reuse.
@@ -67,5 +76,6 @@ This is a small, explicitly preliminary computational comparison. Its lower-reso
 - `deliverables/`: research report and presentation.
 - `kaggle/`: Kaggle notebook handoff instructions.
 - `docs/MODEL_SUMMARY.md`: classifier, splits, transforms, interpretation, and limitations.
+- `docs/METAHEURISTIC_FEATURE_SELECTION.md`: search protocol, measured results, and interpretation.
 
 Source datasets retain their own licenses and must be cited separately.
