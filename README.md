@@ -6,6 +6,8 @@ This repository compares PCA, RBF kernel PCA, Gaussian SNE, t-SNE, PCA followed 
 
 A separate, measured wrapper study compares **GA, binary PSO, DE, GA + PSO, and GA + DE** with a full-feature logistic-regression baseline on the same two datasets. Feature masks are chosen using training-only inner folds; the shared held-out records are used for evaluation. The methods have the same attempted search budget and two sparsity settings. See the [methods and results document](docs/METAHEURISTIC_FEATURE_SELECTION.md), [self-contained Kaggle notebook](kaggle/metaheuristic_feature_selection.ipynb), figures and per-run files in `results/feature_selection/`, and the updated [presentation](deliverables/AML_presentation_metaheuristic.pptx). The feature-selection study uses selected original features and must be read separately from the earlier 2D embedding study.
 
+The [methodology diagrams](docs/METHODOLOGY_DIAGRAMS.md) show the separate split rules for both datasets and explain which model paths can be compared directly. The presentation contains editable diagram slides with the measured AUC, feature-count, and CPU tradeoffs.
+
 ```powershell
 python src/feature_selection.py --seeds 3 --train-n 750 --test-n 300 --penalties 0.02,0.05 --population 8 --generations 6
 python src/plot_feature_selection.py
@@ -77,5 +79,6 @@ This is a small, explicitly preliminary computational comparison. Its lower-reso
 - `kaggle/`: Kaggle notebook handoff instructions.
 - `docs/MODEL_SUMMARY.md`: classifier, splits, transforms, interpretation, and limitations.
 - `docs/METAHEURISTIC_FEATURE_SELECTION.md`: search protocol, measured results, and interpretation.
+- `docs/METHODOLOGY_DIAGRAMS.md`: dataset workflows and model-path comparison.
 
 Source datasets retain their own licenses and must be cited separately.
