@@ -19,6 +19,35 @@ pred = pd.read_csv(OUT / "predictions.csv")
 trace = pd.read_csv(OUT / "trajectories.csv")
 methods = ["WOA + LR", "Adaptive WOA + LR", "Adaptive WOA + fuzzy", "Full + fuzzy"]
 colors = ["#23668A", "#D17A42", "#6C4F8C", "#4B8F72"]
+short_labels = ["WOA + LR", "Adaptive + LR", "Adaptive + fuzzy", "Full + fuzzy"]
+
+# Slide-ready figures: each panel uses the same four models and three-split
+# mean ± sample SD. The figures show measured held-out values, not inner fitness.
+def slide_bars(columns, titles, filename, ylim=None):
+    fig, axs = plt.subplots(2, len(columns), figsize=(15, 7), constrained_layout=True)
+    for row, dataset in enumerate(["HAM10000", "Blood cell"]):
+        sub = runs[runs.dataset == dataset]
+        for col, (metric, heading) in enumerate(zip(columns, titles)):
+            ax = axs[row, col]
+            values = [sub[sub.method == method][metric].mean() for method in methods]
+            deviations = [sub[sub.method == method][metric].std() for method in methods]
+            ax.bar(range(4), values, color=colors, yerr=deviations, capsize=3)
+            ax.set_xticks(range(4), short_labels, rotation=22, ha="right")
+            ax.set_title(f"{dataset}: {heading}", fontsize=15)
+            ax.grid(axis="y", alpha=.2)
+            if ylim is not None:
+                ax.set_ylim(*ylim)
+    fig.savefig(FIG / filename, dpi=180)
+    plt.close(fig)
+
+slide_bars(["auc_roc", "log_loss"], ["ROC AUC (higher better)",
+           "Log loss (lower better)"], "slide_auc_loss.png")
+slide_bars(["accuracy", "sensitivity", "specificity"],
+           ["Accuracy", "Sensitivity", "Specificity"],
+           "slide_threshold_metrics.png", ylim=(0, 1))
+slide_bars(["n_features", "cpu_seconds"],
+           ["Selected features", "Process CPU seconds"],
+           "slide_features_cpu.png")
 
 fig, axs = plt.subplots(2, 3, figsize=(15, 8), constrained_layout=True)
 for i, dataset in enumerate(["HAM10000", "Blood cell"]):
