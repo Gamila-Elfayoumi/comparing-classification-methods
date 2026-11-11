@@ -1,0 +1,10 @@
+{
+  "output": "results\\paper_rlwoa_sofl_alpha02",
+  "seeds": 3,
+  "train_n": 750,
+  "test_n": 300,
+  "agents": 5,
+  "iterations": 20,
+  "alpha": 0.2,
+  "radius": 0.25
+}

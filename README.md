@@ -8,6 +8,10 @@ A separate, measured wrapper study compares **GA, binary PSO, DE, GA + PSO, and 
 
 The [methodology diagrams](docs/METHODOLOGY_DIAGRAMS.md) show the separate split rules for both datasets and explain which model paths can be compared directly. The presentation contains editable diagram slides with the measured AUC, feature-count, and CPU tradeoffs.
 
+## Paper adaptation: RLWOA-SOFL
+
+The project also implements a transparent **adaptation** of Anter and Zhang's 2023 RLWOA-SOFL paper on the same two tables. It compares standard whale optimization, an agent-adaptive neural search policy, balanced logistic regression, and an online fuzzy-prototype classifier. The source study used fMRI pain data; these runs use the existing melanoma and blood-cell anomaly endpoints and are not a reproduction of its clinical results. See the [paper concept, implementation, and interpretation document](docs/PAPER_ADAPTATION.md), `src/paper_rlwoa_sofl.py`, and `results/paper_rlwoa_sofl/`. The updated presentation explains the paper and shows both dataset results.
+
 ```powershell
 python src/feature_selection.py --seeds 3 --train-n 750 --test-n 300 --penalties 0.02,0.05 --population 8 --generations 6
 python src/plot_feature_selection.py
@@ -80,5 +84,8 @@ This is a small, explicitly preliminary computational comparison. Its lower-reso
 - `docs/MODEL_SUMMARY.md`: classifier, splits, transforms, interpretation, and limitations.
 - `docs/METAHEURISTIC_FEATURE_SELECTION.md`: search protocol, measured results, and interpretation.
 - `docs/METHODOLOGY_DIAGRAMS.md`: dataset workflows and model-path comparison.
+- `docs/PAPER_ADAPTATION.md`: RLWOA-SOFL concepts, differences from the fMRI paper, and measured two-dataset interpretation.
+- `src/paper_rlwoa_sofl.py` and `src/plot_paper_adaptation.py`: paper-inspired search/classification benchmark and figures.
+- `kaggle/paper_rlwoa_sofl.ipynb`: self-contained two-dataset paper-adaptation notebook.
 
 Source datasets retain their own licenses and must be cited separately.

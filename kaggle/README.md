@@ -22,3 +22,7 @@ Kaggle publication still requires signing in to the account, attaching the two s
 ## Metaheuristic feature-selection notebook
 
 `metaheuristic_feature_selection.ipynb` is a second self-contained notebook for the same two datasets. It compares full features with GA, PSO, DE, GA + PSO, and GA + DE using training-only wrapper selection, two sparsity settings, three shared splits, and a fixed balanced logistic-regression classifier. It saves selected feature names, per-run metrics and predictions, convergence traces, ROC and confusion figures, AUC and CPU comparisons, and parameter sensitivity. The default output directory is `/kaggle/working/aml-feature-selection/results/` on Kaggle. `build_metaheuristic_notebook.py` regenerates it from the tested source. The first notebook remains the dimensionality-reduction comparison; do not combine their AUC values as a head-to-head algorithm ranking.
+
+## RLWOA-SOFL paper adaptation notebook
+
+`paper_rlwoa_sofl.ipynb` is self-contained for the same two attached datasets. It compares standard and per-agent-adaptive whale optimization with logistic regression and an online fuzzy-prototype classifier, then repeats the search at sparsity weights 0.8 and 0.2. It saves every run's held-out metrics, predictions, selected features, convergence, and CPU time. `build_paper_notebook.py` regenerates it from `src/paper_rlwoa_sofl.py`. This is an adaptation of the supplied fMRI pain-decoding paper, not an exact reproduction or clinical model. See `docs/PAPER_ADAPTATION.md` for the distinctions.
